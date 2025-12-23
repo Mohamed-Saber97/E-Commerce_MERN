@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { getActiceCartForUser, addItemToCart } from '../services/cartServices';
+import { getActiceCartForUser, addItemToCart, updateItemInCart } from '../services/cartServices';
 import vaildateUser from '../middlewares/validateUser';
 import { ExtendRequest } from "../types/extendedRequest";
 
@@ -20,4 +20,11 @@ router.post('/items', vaildateUser, async(req:ExtendRequest, res)=> {
     res.status(response.statusCode).send(response.data);
 })
 
+
+router.put('/items', vaildateUser, async(req:ExtendRequest, res)=> {
+    const userId = req?.user?._id;
+    const { productId, quantity } = req.body;
+    const response = await updateItemInCart({ userId, productId, quantity });
+    res.status(response.statusCode).send(response.data);
+})
 export default router;
