@@ -1,10 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import userModel from "../models/userModel";
+import { ExtendRequest } from "../types/extendedRequest";
 
-interface ExtendRequest extends Request {
-  user?: any;
-}
+
 const vaildateUser = (
   req: ExtendRequest,
   res: Response,
