@@ -5,6 +5,7 @@ import {
   updateItemInCart,
   deleteItemInCart,
   clearCart,
+  checkout,
 } from "../services/cartServices";
 import validateUser from "../middlewares/validateUser";
 import { ExtendRequest } from "../types/extendedRequest";
@@ -48,4 +49,14 @@ router.delete(
     res.status(response.statusCode).send(response.data);
   }
 );
+
+// checkout to convert to order
+
+router.post("/checkout", validateUser, async (req: ExtendRequest, res) => {
+  const userId = req?.user?._id;
+  const {address} = req.body;
+  const response = await checkout({ userId, address });
+  res.status(response.statusCode).send(response.data);
+});
+
 export default router;
