@@ -4,38 +4,48 @@ import {
   addItemToCart,
   updateItemInCart,
   deleteItemInCart,
+  clearCart,
 } from "../services/cartServices";
-import vaildateUser from "../middlewares/validateUser";
+import validateUser from "../middlewares/validateUser";
 import { ExtendRequest } from "../types/extendedRequest";
 
 const router = express.Router();
 
-router.get("/", vaildateUser, async (req: ExtendRequest, res: Response) => {
+router.get("/", validateUser, async (req: ExtendRequest, res: Response) => {
   const userId = req?.user?._id;
   const cart = await getActiceCartForUser({ userId });
   res.status(200).send(cart);
 });
 
-router.post("/items", vaildateUser, async (req: ExtendRequest, res) => {
+//clear route
+router.delete("/", validateUser, async (req: ExtendRequest, res) => {
+  const userId = req?.user?._id;
+  const response = await clearCart({ userId });
+  res.status(response.statusCode).send(response.data);
+});
+
+router.post("/items", validateUser, async (req: ExtendRequest, res) => {
   const userId = req?.user?._id;
   const { productId, quantity } = req.body;
   const response = await addItemToCart({ userId, productId, quantity });
   res.status(response.statusCode).send(response.data);
 });
 
-router.put("/items", vaildateUser, async (req: ExtendRequest, res) => {
+router.put("/items", validateUser, async (req: ExtendRequest, res) => {
   const userId = req?.user?._id;
   const { productId, quantity } = req.body;
   const response = await updateItemInCart({ userId, productId, quantity });
   res.status(response.statusCode).send(response.data);
 });
 
-router.delete("/items/:productId", vaildateUser, async (req: ExtendRequest, res) => {
-  const userId = req?.user?._id;
-  const { productId } = req.params;
-  const response = await deleteItemInCart({ userId, productId });
-  res.status(response.statusCode).send(response.data);
-
-
-});
+router.delete(
+  "/items/:productId",
+  validateUser,
+  async (req: ExtendRequest, res) => {
+    const userId = req?.user?._id;
+    const { productId } = req.params;
+    const response = await deleteItemInCart({ userId, productId });
+    res.status(response.statusCode).send(response.data);
+  }
+);
 export default router;

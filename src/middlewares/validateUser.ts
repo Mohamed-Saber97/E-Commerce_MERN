@@ -4,7 +4,7 @@ import userModel from "../models/userModel";
 import { ExtendRequest } from "../types/extendedRequest";
 
 
-const vaildateUser = (
+const validateUser = (
   req: ExtendRequest,
   res: Response,
   next: NextFunction
@@ -55,4 +55,4 @@ const vaildateUser = (
   });
 };
 
-export default vaildateUser;
+export default validateUser;

@@ -26,6 +26,7 @@ export const getActiceCartForUser = async ({
   return cart;
 };
 
+
 interface AddItemToCart {
   productId: any;
   quantity: number;
@@ -131,6 +132,20 @@ export const deleteItemInCart = async ({
   return { data: updatedCart, statusCode: 200 };
 };
 
+
+
+interface ClearCart {
+  userId: string;
+}
+export const clearCart = async({userId} : ClearCart)=>{
+    const cart = await getActiceCartForUser({ userId });
+
+    cart.items= [];
+    cart.totalAmount = 0;
+    const updatedCart = await cart.save();
+     return { data: updatedCart, statusCode: 200 };
+
+}
 
 const calculateCartTotalItems = ({cartItems} : {cartItems: ICartItem[];}) => {
   
