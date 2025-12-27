@@ -27,7 +27,7 @@ const validateUser = (
   // if you are here then we have a token
   // check is the token === user token in db with my secret key
 
-  jwt.verify(token, "SECRET_KEY", async (err, payload) => {
+  jwt.verify(token, process.env.JWT_SECRET || '', async (err, payload) => {
     // if err
     if (err) {
       res.status(403).send("invaild token");
