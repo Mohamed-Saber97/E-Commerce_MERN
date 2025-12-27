@@ -11,7 +11,7 @@ app.use(express.json());
 dotenv.config();
 //connect db
 mongoose
-  .connect(process.env.DB_URL || '');
+  .connect(process.env.DB_URL || '')
   .then(() => console.log("mongo connected"))
   .catch((err) => console.log("failed to connect", err));
 
