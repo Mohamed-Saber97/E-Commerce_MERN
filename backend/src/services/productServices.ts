@@ -21,6 +21,13 @@ export const seedInitialProducts = async () => {
         price: 14000,
         stock: 14,
       },
+         {
+        title: "ASUS Labtop",
+        image:
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_bBU_qo5RQ8jc5thliO9gxi-VBf_OW-KUCQ&s",
+        price: 25000,
+        stock: 19,
+      },
     ];
 
     const products = await getAllProduct();
