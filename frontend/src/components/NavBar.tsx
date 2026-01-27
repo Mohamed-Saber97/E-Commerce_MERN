@@ -10,26 +10,24 @@ import Avatar from "@mui/material/Avatar";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
+import { useAuth } from "../context/Auth/AuthContext";
 
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
 
 function NavBar() {
-
+  const { username, token } = useAuth();
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
-    null
+    null,
   );
-
 
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
   };
 
- 
-
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
-
+  console.log("form navbar", { username, token });
   return (
     <AppBar position="static">
       <Container maxWidth="xl">
@@ -55,14 +53,11 @@ function NavBar() {
                 variant="h6"
                 noWrap
                 component="a"
-                
                 sx={{
                   mr: 2,
                   display: { xs: "none", md: "flex" },
                   fontFamily: "monospace",
                   fontWeight: 700,
-
-
                 }}
               >
                 Tech Hub

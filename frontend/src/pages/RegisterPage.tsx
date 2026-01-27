@@ -5,27 +5,33 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useRef, useState } from "react";
 import { BASE_URL } from "../constants/baseUrl";
+import { useAuth } from "../context/Auth/AuthContext";
 
 const RegisterPage = () => {
-
-    const [errors, setErrors] = useState("");
+  const [errors, setErrors] = useState("");
   //ref
   const firstNameRef = useRef<HTMLInputElement>(null);
   const lastNameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
-
+  //const auth = useAuth();
+  const { login } = useAuth();
   const onSubmit = async () => {
     const firstName = firstNameRef.current?.value;
     const lastName = lastNameRef.current?.value;
     const email = emailRef.current?.value;
     const password = passwordRef.current?.value;
 
+    if(!firstName || !lastName || !email || !password ){
+      setErrors("Check Data");
+
+      return;
+    }
     //call api to create the user
     const response = await fetch(`${BASE_URL}/user/register`, {
       method: "POST",
-      headers:{
-        'Content-Type': "application/json"
+      headers: {
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         firstName,
@@ -35,13 +41,19 @@ const RegisterPage = () => {
       }),
     });
 
-    if(!response.ok){
-            setErrors("Unable to register the user please try again");
-        return;
+    if (!response.ok) {
+      setErrors("Unable to register the user please try again");
+      return;
     }
 
-    const data = await response.json();
-console.log(data)
+    const token = await response.json();
+
+    if (!token) {
+      setErrors("incorrect token");
+      return;
+    }
+    login(email, token);
+    
   };
   return (
     <Container>
@@ -72,7 +84,7 @@ console.log(data)
           <Button onClick={onSubmit} variant="contained">
             Register
           </Button>
-          {errors && <Typography sx={{color:"red"}}>{errors}</Typography>}
+          {errors && <Typography sx={{ color: "red" }}>{errors}</Typography>}
         </Box>
       </Box>
     </Container>
