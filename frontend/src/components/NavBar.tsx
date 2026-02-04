@@ -17,7 +17,7 @@ import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 function NavBar() {
-  const { username, isAuthenticated } = useAuth();
+  const { username, isAuthenticated, logout } = useAuth();
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
     null,
   );
@@ -35,6 +35,11 @@ const navigate = useNavigate();
     navigate('/login');
   }
 
+  const handelLogout = ()=>{
+    logout();
+    navigate('/');
+    handleCloseUserMenu();
+  }
   return (
     <AppBar position="static">
       <Container maxWidth="xl">
@@ -107,7 +112,7 @@ const navigate = useNavigate();
                   </Typography>
                 </MenuItem>
 
-                <MenuItem onClick={handleCloseUserMenu}>
+                <MenuItem onClick={handelLogout}>
                   <Typography sx={{ textAlign: "center" }}>LogOut</Typography>
                 </MenuItem>
               </Menu>
