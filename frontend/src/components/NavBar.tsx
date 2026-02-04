@@ -13,8 +13,9 @@ import AdbIcon from "@mui/icons-material/Adb";
 import { useAuth } from "../context/Auth/AuthContext";
 
 import Grid from "@mui/material/Grid";
-import { Button } from "@mui/material";
+import { Badge, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import {  ShoppingCart } from "@mui/icons-material";
 
 function NavBar() {
   const { username, isAuthenticated, logout } = useAuth();
@@ -39,6 +40,10 @@ const navigate = useNavigate();
     logout();
     navigate('/');
     handleCloseUserMenu();
+  }
+
+  const handleCart =()=>{
+    navigate('/cart')
   }
   return (
     <AppBar position="static">
@@ -76,7 +81,12 @@ const navigate = useNavigate();
               </Typography>
             </Box>
 
-            <Box sx={{ flexGrow: 0 }}>
+            <Box sx={{ display:"flex", flexDirection:"row", alignItems:"center" ,flexGrow: 0 }} gap={4}>
+              <IconButton aria-label="cart" onClick={handleCart}>
+                <Badge badgeContent={4} color="secondary">
+                  <ShoppingCart sx={{color: "#ffffff"}} />
+                </Badge>
+              </IconButton>
               {isAuthenticated ? <>
                             <Tooltip title="Open settings">
                 <Grid container alignItems="center" spacing={2}>
