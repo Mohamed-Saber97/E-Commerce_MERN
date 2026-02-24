@@ -1,5 +1,5 @@
 import cartModel, { ICart, ICartItem } from "../models/cartModel";
-import  { IOrder, IOrderItem , orderModel} from "../models/orderModel";
+import { IOrder, IOrderItem, orderModel } from "../models/orderModel";
 import productModel from "../models/productModel";
 
 interface CreateCartForUser {
@@ -14,12 +14,22 @@ export const createCartForUser = async ({ userId }: CreateCartForUser) => {
 
 interface GetActiceCartForUser {
   userId: string;
+  populateProduct?: boolean;
 }
 
 export const getActiceCartForUser = async ({
   userId,
+  populateProduct,
 }: GetActiceCartForUser) => {
-  let cart = await cartModel.findOne({ userId, status: "active" });
+  let cart;
+  if (populateProduct) {
+    cart = await cartModel
+      .findOne({ userId, status: "active" })
+      .populate("items.product");
+  } else {
+    cart = await cartModel.findOne({ userId, status: "active" });
+  }
+
   if (!cart) {
     cart = await createCartForUser({ userId });
   }
@@ -41,7 +51,7 @@ export const addItemToCart = async ({
 
   //check that the item in the cart ??
   const existProductInCart = await cart.items.find(
-    (p) => p.product.toString() === productId
+    (p) => p.product.toString() === productId,
   );
   if (existProductInCart) {
     return { data: "item already exsit in cart", statusCode: 400 };
@@ -58,8 +68,11 @@ export const addItemToCart = async ({
   cart.items.push({ product: productId, unitPrice: product.price, quantity });
   cart.totalAmount += product.price * quantity;
 
-  const updatedCart = await cart.save();
-  return { data: updatedCart, statusCode: 201 };
+ await cart.save();
+  return {
+    data: await getActiceCartForUser({ userId, populateProduct: true }),
+    statusCode: 201,
+  };
 };
 
 interface UpdateItemInCart {
@@ -75,7 +88,7 @@ export const updateItemInCart = async ({
 }: UpdateItemInCart) => {
   const cart = await getActiceCartForUser({ userId });
   const existProductInCart = await cart.items.find(
-    (p) => p.product.toString() === productId
+    (p) => p.product.toString() === productId,
   );
   if (!existProductInCart) {
     return { data: "item not  exsit in cart", statusCode: 400 };
@@ -91,7 +104,7 @@ export const updateItemInCart = async ({
   }
 
   const otherCartItems = cart.items.filter(
-    (p) => p.product.toString() !== productId
+    (p) => p.product.toString() !== productId,
   );
 
   let total = calculateCartTotalItems({ cartItems: otherCartItems });
@@ -100,8 +113,8 @@ export const updateItemInCart = async ({
   total += existProductInCart.quantity * existProductInCart.unitPrice;
 
   cart.totalAmount = total;
-  const updatedCart = await cart.save();
-  return { data: updatedCart, statusCode: 200 };
+ await cart.save();
+  return {  data: await getActiceCartForUser({ userId, populateProduct: true }), statusCode: 200 };
 };
 
 interface DeleteItemInCart {
@@ -114,22 +127,22 @@ export const deleteItemInCart = async ({
 }: DeleteItemInCart) => {
   const cart = await getActiceCartForUser({ userId });
   const existProductInCart = await cart.items.find(
-    (p) => p.product.toString() === productId
+    (p) => p.product.toString() === productId,
   );
   if (!existProductInCart) {
     return { data: "item not  exsit in cart", statusCode: 400 };
   }
 
   const otherCartItems = cart.items.filter(
-    (p) => p.product.toString() !== productId
+    (p) => p.product.toString() !== productId,
   );
 
   let total = calculateCartTotalItems({ cartItems: otherCartItems });
 
   cart.items = otherCartItems;
   cart.totalAmount = total;
-  const updatedCart = await cart.save();
-  return { data: updatedCart, statusCode: 200 };
+await cart.save();
+  return { data: await getActiceCartForUser({ userId, populateProduct: true }), statusCode: 200 };
 };
 
 interface ClearCart {
@@ -158,8 +171,8 @@ interface Checkout {
   address: string;
 }
 
-export const checkout = async ({ userId , address}: Checkout) => {
-  if(!address) {
+export const checkout = async ({ userId, address }: Checkout) => {
+  if (!address) {
     return { data: "address not found ", statusCode: 400 };
   }
   const cart = await getActiceCartForUser({ userId });
@@ -182,18 +195,17 @@ export const checkout = async ({ userId , address}: Checkout) => {
     await product.save();
   }
 
-const order = await orderModel.create({
- orderItems,
-  total: cart.totalAmount,
-  address,
-  userId,
-});
+  const order = await orderModel.create({
+    orderItems,
+    total: cart.totalAmount,
+    address,
+    userId,
+  });
 
-await order.save();
-//update cart status to complete
-cart.status = "completed";
-await cart.save();
+  await order.save();
+  //update cart status to complete
+  cart.status = "completed";
+  await cart.save();
 
-
-return {data: order, statusCode: 201}
+  return { data: order, statusCode: 201 };
 };

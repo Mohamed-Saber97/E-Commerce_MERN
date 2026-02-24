@@ -15,7 +15,7 @@ const router = express.Router();
 router.get("/", validateUser, async (req: ExtendRequest, res: Response) => {
   try {
     const userId = req?.user?._id;
-    const cart = await getActiceCartForUser({ userId });
+    const cart = await getActiceCartForUser({ userId , populateProduct: true});
     res.status(200).send(cart);
   } catch (error: any) {
     res.status(500).send(error?.message);
