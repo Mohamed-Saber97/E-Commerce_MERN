@@ -5,15 +5,17 @@ import Box from "@mui/material/Box";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import Button from "@mui/material/Button";
 const CartPage = () => {
-  const { cartItems, totalAmount , updateItemInCart} = useCart();
-  const handelQuantity = (productId:string , quantity: number) => {
-    if(quantity <= 0){
-      return ;
+  const { cartItems, totalAmount, updateItemInCart, deleteItemInCart } = useCart();
+  const handelQuantity = (productId: string, quantity: number) => {
+    if (quantity <= 0) {
+      return;
     }
     updateItemInCart(productId, quantity);
-
   };
 
+  const handelRemoveItemFromCart = (productId: string) => {
+    deleteItemInCart(productId);
+  };
 
   return (
     <Container fixed sx={{ mt: 2 }}>
@@ -42,18 +44,29 @@ const CartPage = () => {
               </Box>
             </Box>
             <ButtonGroup variant="contained" aria-label="Basic button group">
-              <Button onClick={() => handelQuantity(item.productId, item.quantity - 1)}>-</Button>
-              <Button onClick={() => handelQuantity(item.productId, item.quantity + 1)}>+</Button>
-              
-              <Button>Remove Item</Button>
+              <Button
+                onClick={() =>
+                  handelQuantity(item.productId, item.quantity - 1)
+                }
+              >
+                -
+              </Button>
+              <Button
+                onClick={() =>
+                  handelQuantity(item.productId, item.quantity + 1)
+                }
+              >
+                +
+              </Button>
+
+              <Button onClick={() => handelRemoveItemFromCart(item.productId)}>
+                Remove Item
+              </Button>
             </ButtonGroup>
           </Box>
         ))}
         <Box>
-          <Typography variant="h4">
-         
-            Total Amount : {totalAmount} EGP
-          </Typography>
+          <Typography variant="h4">Total Amount : {totalAmount} EGP</Typography>
         </Box>
       </Box>
     </Container>
