@@ -5,7 +5,13 @@ import Box from "@mui/material/Box";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import Button from "@mui/material/Button";
 const CartPage = () => {
-  const { cartItems, totalAmount, updateItemInCart, deleteItemInCart } = useCart();
+  const {
+    cartItems,
+    totalAmount,
+    updateItemInCart,
+    deleteItemInCart,
+    clearCart,
+  } = useCart();
   const handelQuantity = (productId: string, quantity: number) => {
     if (quantity <= 0) {
       return;
@@ -20,6 +26,10 @@ const CartPage = () => {
   return (
     <Container fixed sx={{ mt: 2 }}>
       <Box display="flex" flexDirection="column" gap={4}>
+        <Box display='flex' flexDirection="row" justifyContent="space-between">
+          <Typography variant="h4">My Cart</Typography>
+          <Button variant="contained" onClick={() => clearCart()}>Clear Items</Button>
+        </Box>
         <Typography variant="h4">My Cart</Typography>
         {cartItems.map((item) => (
           <Box

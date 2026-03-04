@@ -153,8 +153,8 @@ export const clearCart = async ({ userId }: ClearCart) => {
 
   cart.items = [];
   cart.totalAmount = 0;
-  const updatedCart = await cart.save();
-  return { data: updatedCart, statusCode: 200 };
+ await cart.save();
+  return { data: await getActiceCartForUser({ userId, populateProduct: true }), statusCode: 200 };
 };
 
 const calculateCartTotalItems = ({ cartItems }: { cartItems: ICartItem[] }) => {
