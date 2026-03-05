@@ -38,6 +38,12 @@ const navigate = useNavigate();
     navigate('/login');
   }
 
+  const handelMyOrders = ()=>{
+    navigate('/my-orders');
+        handleCloseUserMenu();
+
+  }
+
   const handelLogout = ()=>{
     logout();
     navigate('/');
@@ -121,7 +127,7 @@ const navigate = useNavigate();
                 open={Boolean(anchorElUser)}
                 onClose={handleCloseUserMenu}
               >
-                <MenuItem onClick={handleCloseUserMenu}>
+                <MenuItem onClick={handelMyOrders}>
                   <Typography sx={{ textAlign: "center" }}>
                     My Orders
                   </Typography>

@@ -2,6 +2,7 @@ import userModel from "../models/userModel";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { findAncestor } from "typescript";
+import { orderModel } from "../models/orderModel";
 // register
 interface RegisterParams {
   firstName: string;
@@ -51,6 +52,19 @@ export const login = async ({ email, password }: LoginParams) => {
   }
   return { data: "Error At Login in username or password", statusCode: 400 };
 };
+
+
+interface getMyOrdersParams {
+  userId: string;
+}
+export const getMyOrders = async({userId} :getMyOrdersParams)=>{
+  try {
+    const orders= await orderModel.find({ userId });
+    return { data: orders, statusCode: 200};
+  } catch (error) {
+    throw error;
+  }
+}
 
 const generateJWT = (data: any) => {
   return jwt.sign(data, process.env.JWT_SECRET || '');
