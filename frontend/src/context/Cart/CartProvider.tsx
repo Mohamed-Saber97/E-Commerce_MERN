@@ -4,6 +4,7 @@ import type { CartItem } from "../../types/CartItem";
 import { BASE_URL } from "../../constants/baseUrl";
 import { useAuth } from "../Auth/AuthContext";
 import { mapCartItems } from "../../utility/cartMapper";
+import { apiFetch } from "../../utility/apiFetch";
 
 const CartProvider: FC<PropsWithChildren> = ({ children }) => {
   const { token } = useAuth();
@@ -11,21 +12,19 @@ const CartProvider: FC<PropsWithChildren> = ({ children }) => {
   const [totalAmount, setTotalAmount] = useState<number>(0);
   const [error, setError] = useState("");
 
+
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  }
   useEffect(() => {
     if (!token) {
       return;
     }
     const fetchCart = async () => {
-      const response = await fetch(`${BASE_URL}/cart`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        setError("failed to fetch user cart");
-      }
-      const cart = await response.json();
-
+      const cart = await apiFetch(`${BASE_URL}/cart`, {
+        headers,
+      })
       setCartItems(mapCartItems(cart.items));
       setTotalAmount(cart.totalAmount);
     };
@@ -34,28 +33,18 @@ const CartProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const addItemToCart = async (productId: string) => {
     try {
-      const response = await fetch(`${BASE_URL}/cart/items`, {
+      const cart = await apiFetch(`${BASE_URL}/cart/items`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify({
           productId,
           quantity: 1,
         }),
-      });
-
-      if (!response.ok) {
-        setError("Failed to add to cart");
-      }
-      const cart = await response.json();
+      })
       if (!cart) {
         setError("failed to parse cart data");
       }
-
       setCartItems([...mapCartItems(cart.items)]);
-
       setTotalAmount(cart.totalAmount);
     } catch (error) {
       console.error(error);
@@ -64,25 +53,17 @@ const CartProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const updateItemInCart = async (productId: string, quantity: number) => {
     try {
-      const response = await fetch(`${BASE_URL}/cart/items`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
+      const cart = await apiFetch(`${BASE_URL}/cart/items`, {
+         method: "PUT",
+         headers,
+                 body: JSON.stringify({
           productId,
           quantity,
         }),
-      });
-      if (!response.ok) {
-        setError("Failed to update to cart");
-      }
-      const cart = await response.json();
+      })
       if (!cart) {
         setError("failed to parse cart data");
       }
-
       setCartItems([...mapCartItems(cart.items)]);
       setTotalAmount(cart.totalAmount);
     } catch (error) {
@@ -92,16 +73,10 @@ const CartProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const deleteItemInCart = async (productId: string) => {
     try {
-      const response = await fetch(`${BASE_URL}/cart/items/${productId}`, {
+      const cart = await apiFetch(`${BASE_URL}/cart/items/${productId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        setError("Failed to delete to cart");
-      }
-      const cart = await response.json();
+        headers,
+      })
       if (!cart) {
         setError("failed to parse cart data");
       }
@@ -115,16 +90,10 @@ const CartProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const clearCart = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/cart`, {
+      const cart = await apiFetch(`${BASE_URL}/cart`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        setError("Failed to empty to cart");
-      }
-      const cart = await response.json();
+        headers,
+      })
       if (!cart) {
         setError("failed to parse cart data");
       }
