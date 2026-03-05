@@ -3,6 +3,7 @@ import { CartContext } from "./CartContext";
 import type { CartItem } from "../../types/CartItem";
 import { BASE_URL } from "../../constants/baseUrl";
 import { useAuth } from "../Auth/AuthContext";
+import { mapCartItems } from "../../utility/cartMapper";
 
 const CartProvider: FC<PropsWithChildren> = ({ children }) => {
   const { token } = useAuth();
@@ -24,25 +25,8 @@ const CartProvider: FC<PropsWithChildren> = ({ children }) => {
         setError("failed to fetch user cart");
       }
       const cart = await response.json();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cartItemsMapped = cart.items.map(
-        ({
-          product,
-          quantity,
-          unitPrice,
-        }: {
-          product: any;
-          quantity: any;
-          unitPrice: number;
-        }) => ({
-          productId: product._id,
-          title: product.title,
-          image: product.image,
-          quantity,
-          unitPrice,
-        }),
-      );
-      setCartItems(cartItemsMapped);
+
+      setCartItems(mapCartItems(cart.items));
       setTotalAmount(cart.totalAmount);
     };
     fetchCart();
@@ -70,17 +54,8 @@ const CartProvider: FC<PropsWithChildren> = ({ children }) => {
         setError("failed to parse cart data");
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cartItemsMapped = cart.items.map(
-        ({ product, quantity }: { product: any; quantity: any }) => ({
-          productId: product._id,
-          title: product.title,
-          image: product.image,
-          quantity,
-          unitPrice: product.unitPrice,
-        }),
-      );
-      setCartItems([...cartItemsMapped]);
+      setCartItems([...mapCartItems(cart.items)]);
+
       setTotalAmount(cart.totalAmount);
     } catch (error) {
       console.error(error);
@@ -108,32 +83,20 @@ const CartProvider: FC<PropsWithChildren> = ({ children }) => {
         setError("failed to parse cart data");
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cartItemsMapped = cart.items.map(
-        ({ product, quantity, unitPrice }: { product: any; quantity: any ; unitPrice: number}) => ({
-          productId: product._id,
-          title: product.title,
-          image: product.image,
-          quantity,
-          unitPrice,
-        }),
-      );
-      setCartItems([...cartItemsMapped]);
+      setCartItems([...mapCartItems(cart.items)]);
       setTotalAmount(cart.totalAmount);
     } catch (error) {
       console.error(error);
     }
   };
 
-
-  const deleteItemInCart= async (productId: string) =>{
+  const deleteItemInCart = async (productId: string) => {
     try {
       const response = await fetch(`${BASE_URL}/cart/items/${productId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        
       });
       if (!response.ok) {
         setError("Failed to delete to cart");
@@ -143,33 +106,20 @@ const CartProvider: FC<PropsWithChildren> = ({ children }) => {
         setError("failed to parse cart data");
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cartItemsMapped = cart.items.map(
-        ({ product, quantity, unitPrice }: { product: any; quantity: any ; unitPrice: number}) => ({
-          productId: product._id,
-          title: product.title,
-          image: product.image,
-          quantity,
-          unitPrice,
-        }),
-      );
-      setCartItems([...cartItemsMapped]);
+      setCartItems([...mapCartItems(cart.items)]);
       setTotalAmount(cart.totalAmount);
     } catch (error) {
-         console.error(error);
-
-      
+      console.error(error);
     }
   };
 
-  const clearCart = async ()=>{
-try {
+  const clearCart = async () => {
+    try {
       const response = await fetch(`${BASE_URL}/cart`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        
       });
       if (!response.ok) {
         setError("Failed to empty to cart");
@@ -179,18 +129,22 @@ try {
         setError("failed to parse cart data");
       }
 
-
       setCartItems([]);
       setTotalAmount(0);
     } catch (error) {
-         console.error(error);
-
-      
+      console.error(error);
     }
-  }
+  };
   return (
     <CartContext.Provider
-      value={{ cartItems, totalAmount, addItemToCart, updateItemInCart, deleteItemInCart, clearCart }}
+      value={{
+        cartItems,
+        totalAmount,
+        addItemToCart,
+        updateItemInCart,
+        deleteItemInCart,
+        clearCart,
+      }}
     >
       {children}
     </CartContext.Provider>
