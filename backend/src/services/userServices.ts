@@ -1,7 +1,6 @@
 import userModel from "../models/userModel";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { findAncestor } from "typescript";
 import { orderModel } from "../models/orderModel";
 // register
 interface RegisterParams {
@@ -22,7 +21,8 @@ export const register = async ({
   if (findUser) {
     return { data: "User already esists!!", statusCode: 400 };
   }
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const SALT_ROUNDS = 10;
+  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
   const newUser = new userModel({
     firstName,
     lastName,
