@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon",
-    "test": "vitest"
+    "test": "vitest",
+    "test-ui": "vitest --ui"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +25,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@vitest/ui": "^4.0.18",
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
     "vitest": "^4.0.18"

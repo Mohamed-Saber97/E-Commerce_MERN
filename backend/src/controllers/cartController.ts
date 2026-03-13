@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { ExtendRequest } from "../types/extendedRequest";
 import {
-  getActiceCartForUser,
+  getActiveCartForUser,
   addItemToCart,
   updateItemInCart,
   deleteItemInCart,
@@ -12,7 +12,7 @@ import {
 export const getAllCarts = async (req: ExtendRequest, res: Response) => {
   try {
     const userId = req?.user?._id;
-    const cart = await getActiceCartForUser({ userId, populateProduct: true });
+    const cart = await getActiveCartForUser({ userId, populateProduct: true });
     res.status(200).send(cart);
   } catch (error: any) {
     res.status(500).send(error?.message);
