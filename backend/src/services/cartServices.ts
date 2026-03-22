@@ -22,8 +22,12 @@ export const getActiveCartForUser = async ({
   populateProduct,
 }: GetActiveCartForUser) => {
   const query = cartModel.findOne({ userId, status: "active" });
-  const cart = populateProduct ? await query.populate("items.product") : await query;
-  if (cart) return cart;
+  const cart = populateProduct
+    ? await query.populate("items.product")
+    : await query;
+  if (cart) {
+    return cart;
+  }
 
   return createCartForUser({ userId });
 };
@@ -59,7 +63,7 @@ export const addItemToCart = async ({
   cart.items.push({ product: productId, unitPrice: product.price, quantity });
   cart.totalAmount += product.price * quantity;
 
- await cart.save();
+  await cart.save();
   return {
     data: await getActiveCartForUser({ userId, populateProduct: true }),
     statusCode: 201,
@@ -104,8 +108,11 @@ export const updateItemInCart = async ({
   total += existProductInCart.quantity * existProductInCart.unitPrice;
 
   cart.totalAmount = total;
- await cart.save();
-  return {  data: await getActiveCartForUser({ userId, populateProduct: true }), statusCode: 200 };
+  await cart.save();
+  return {
+    data: await getActiveCartForUser({ userId, populateProduct: true }),
+    statusCode: 200,
+  };
 };
 
 interface DeleteItemInCart {
@@ -132,8 +139,11 @@ export const deleteItemInCart = async ({
 
   cart.items = otherCartItems;
   cart.totalAmount = total;
-await cart.save();
-  return { data: await getActiveCartForUser({ userId, populateProduct: true }), statusCode: 200 };
+  await cart.save();
+  return {
+    data: await getActiveCartForUser({ userId, populateProduct: true }),
+    statusCode: 200,
+  };
 };
 
 interface ClearCart {
@@ -144,8 +154,11 @@ export const clearCart = async ({ userId }: ClearCart) => {
 
   cart.items = [];
   cart.totalAmount = 0;
- await cart.save();
-  return { data: await getActiveCartForUser({ userId, populateProduct: true }), statusCode: 200 };
+  await cart.save();
+  return {
+    data: await getActiveCartForUser({ userId, populateProduct: true }),
+    statusCode: 200,
+  };
 };
 
 const calculateCartTotalItems = ({ cartItems }: { cartItems: ICartItem[] }) => {
