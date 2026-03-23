@@ -6,6 +6,7 @@ import productRoutes from "./routes/productRoutes";
 import {seedInitialProducts} from './services/productServices'
 import cartRoutes from './routes/cartRoutes';
 import cors from 'cors';
+import { errorHandler } from './middlewares/errorHandler';
 const app = express();
 const port = 3001;
 app.use(express.json());
@@ -19,11 +20,11 @@ mongoose
 
 seedInitialProducts();
 
-
 app.use('/user', userRoutes);
 app.use('/product', productRoutes);
 app.use('/cart', cartRoutes);
 
+app.use(errorHandler);
 app.listen(port, ()=> {
     console.log(`server is running at: http://localhost:${port}`);
     
