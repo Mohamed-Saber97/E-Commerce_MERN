@@ -1,6 +1,8 @@
+import mongoose from "mongoose";
 import cartModel, { ICart, ICartItem } from "../models/cartModel";
 import { IOrder, IOrderItem, orderModel } from "../models/orderModel";
 import productModel from "../models/productModel";
+import { AppError } from "../utils/AppError";
 
 interface CreateCartForUser {
   userId: string;
@@ -49,16 +51,19 @@ export const addItemToCart = async ({
     (p) => p.product.toString() === productId,
   );
   if (existProductInCart) {
-    return { data: "item already exsit in cart", statusCode: 400 };
+    //return { data: "item already exsit in cart", statusCode: 400 };
+    throw new AppError("Item Already Exsit in Cart", 400);
   }
   //fetch the product
   const product = await productModel.findById(productId);
   if (!product) {
-    return { data: "product not found ", statusCode: 400 };
+    //return { data: "product not found ", statusCode: 400 };
+    throw new AppError("Product Not Found", 400);
   }
 
   if (product.stock < quantity) {
-    return { data: "low stock ", statusCode: 400 };
+    //return { data: "low stock ", statusCode: 400 };
+    throw new AppError("Low Stock", 400);
   }
   cart.items.push({ product: productId, unitPrice: product.price, quantity });
   cart.totalAmount += product.price * quantity;
@@ -86,16 +91,19 @@ export const updateItemInCart = async ({
     (p) => p.product.toString() === productId,
   );
   if (!existProductInCart) {
-    return { data: "item not  exsit in cart", statusCode: 400 };
+    //return { data: "item not  exsit in cart", statusCode: 400 };
+    throw new AppError("Item Not Exsit In Cart", 400);
   }
 
   const product = await productModel.findById(productId);
   if (!product) {
-    return { data: "product not found ", statusCode: 400 };
+    //return { data: "product not found ", statusCode: 400 };
+    throw new AppError("Product Not Found", 400);
   }
 
   if (product.stock < quantity) {
-    return { data: "low stock ", statusCode: 400 };
+    //return { data: "low stock ", statusCode: 400 };
+    throw new AppError("Low Stock", 400);
   }
 
   const otherCartItems = cart.items.filter(
@@ -128,7 +136,8 @@ export const deleteItemInCart = async ({
     (p) => p.product.toString() === productId,
   );
   if (!existProductInCart) {
-    return { data: "item not  exsit in cart", statusCode: 400 };
+    //return { data: "item not  exsit in cart", statusCode: 400 };
+    throw new AppError("Item Not Exsit In Cart", 400);
   }
 
   const otherCartItems = cart.items.filter(
@@ -174,11 +183,18 @@ interface Checkout {
   userId: string;
   address: string;
 }
-
-export const checkout = async ({ userId, address }: Checkout) => {
+/*
+export const checkoutwithoutTransaction = async ({
+  userId,
+  address,
+}: Checkout) => {
   if (!address) {
     return { data: "address not found ", statusCode: 400 };
   }
+  if (!address?.trim()) {
+    throw new AppError("Address is required", 400);
+  }
+
   const cart = await getActiveCartForUser({ userId });
   // loop cartitems and create from it orderitems
 
@@ -213,3 +229,104 @@ export const checkout = async ({ userId, address }: Checkout) => {
 
   return { data: order, statusCode: 201 };
 };
+*/
+export const checkout = async ({ userId, address }: Checkout) => {
+  if (!address) {
+    return { data: "address not found ", statusCode: 400 };
+  }
+  if (!address?.trim()) {
+    throw new AppError("Address is required", 400);
+  }
+
+  //start session
+  const session = await mongoose.startSession();
+  try {
+    await session.withTransaction(async () => {
+      const cart = await cartModel
+        .findOne({
+          userId,
+          status: "active",
+        })
+        .session(session);
+
+      if (!cart) {
+        throw new AppError("Actice Cart Not Found", 404);
+      }
+      if (!cart!.items.length) {
+        throw new AppError("Cart is empty", 400);
+      }
+      const orderItems: IOrderItem[] = [];
+      for (const item of cart!.items) {
+        const updatedProduct = await productModel.findOneAndUpdate(
+          {
+            _id: item.product,
+            stock: { $gte: item.quantity },
+          },
+          {
+            $inc: { stock: -item.quantity },
+          },
+          {
+            new: true,
+            session,
+          },
+        );
+        if (!updatedProduct) {
+          throw new AppError("one or more product are out of stock", 409);
+        }
+        orderItems.push({
+          productTitle: updatedProduct.title,
+          productImage: updatedProduct.image,
+          unitPrice: item.unitPrice,
+          quantity: item.quantity,
+        });
+      }
+
+      const createOreders = await orderModel.create(
+        [
+          {
+            orderItems,
+            total: cart!.totalAmount,
+            address,
+            userId,
+          },
+        ],
+        { session },
+      );
+
+      cart!.status = "completed";
+      await cart!.save({session});
+      return {date: createOreders[0], statusCode: 201};
+    });
+  } catch (error: any) {
+      if (error.message === "active cart not found" || error.message === "cart is empty") {
+      return {
+        data: error.message,
+        statusCode: error.message === "active cart not found" ? 404 : 400,
+      };
+    }
+
+    if (error.message === "insufficient stock") {
+      return {
+        data: "one or more products are out of stock",
+        statusCode: 409,
+      };
+    }
+
+    return {
+      data: error.message || "checkout failed",
+      statusCode: 500,
+    };
+  } finally {
+    await session.endSession();
+  }
+};
+
+/*
+
+1. Load cart
+2. Validate products exist
+3. Check stock
+4. Decrease stock
+5. Create order
+6. Clear cart
+*/
